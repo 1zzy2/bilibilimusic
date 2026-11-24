@@ -43,3 +43,21 @@ npm run package
 ## 许可证与致谢
 
 本项目包含 [MusicFreeDesktop](https://github.com/maotoumao/MusicFreeDesktop) 的代码，并在此基础上开发上述功能。保留原作者版权说明，使用 AGPL-3.0 许可证，详见 [LICENSE](LICENSE)。
+
+## 界面截图
+
+以下为实际使用界面截图。音乐功能为两个分支共有；截图取自 live 分支，main 分支不包含直播入口。界面会随版本继续调整。
+
+### 歌单与音乐列表
+
+![歌单与音乐列表](docs/screenshots/music-playlist.png)
+
+### 音乐播放与歌词
+
+![音乐播放与歌词](docs/screenshots/music-player.png)
+
+### 直播画面（live 分支）
+
+支持直播画面、小窗和全屏。下图为开发过程中的直播界面示例；当前版本已隐藏顶部信息，控制栏使用自动收起的图标。
+
+![直播播放界面](docs/screenshots/live-player.png)
