@@ -1,8 +1,8 @@
 {
-  "name": "musicfree-desktop",
-  "productName": "Music",
+  "name": "bilibilimusic",
+  "productName": "bilibilimusic",
   "version": "0.0.8",
-  "description": "一个插件化的音乐播放器",
+  "description": "B站音乐播放器",
   "main": ".webpack/main",
   "scripts": {
     "start": "electron-forge start",
@@ -122,5 +122,9 @@
     "socket.io": "^4.7.5",
     "unzipper": "^0.11.6",
     "webdav": "^5.6.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/1zzy2/bilibilimusic.git"
   }
 }
