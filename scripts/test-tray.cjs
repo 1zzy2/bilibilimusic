@@ -1,0 +1,6 @@
+require('ts-node').register({transpileOnly:true,compilerOptions:{module:'commonjs'}});
+const Module=require('module'), assert=require('node:assert/strict');const original=Module._load;
+let menu,commands=[];const windowManager={mainWindow:{removeAllListeners(){}},showMainWindow(){}};
+Module._load=function(id,...args){if(id==='electron')return {app:{exit(){}},Menu:{setApplicationMenu(){},buildFromTemplate:t=>t},nativeImage:{createFromPath:()=>({resize(){return {}}})},Tray:class{on(){}setToolTip(){}setContextMenu(m){menu=m}}};if(id==='@shared/i18n/main')return {t:k=>k};if(id==='@/common/get-resource-path')return {__esModule:true,default:()=>''};if(id==='@/common/constant')return {ResourceName:{LOGO_IMAGE:1}};if(id==='@shared/app-config/main')return {__esModule:true,default:{onConfigUpdated(){}}};if(id==='@main/window-manager')return {__esModule:true,default:windowManager};if(id==='@shared/message-bus/main')return {__esModule:true,default:{getAppState:()=>({musicItem:{title:'test'}}),sendCommand:c=>commands.push(c)}};return original.call(this,id,...args)};
+require('../src/main/tray-manager/index.ts').default.setup(windowManager);
+assert.deepEqual(menu.map(m=>m.label),['main.previous_music','main.next_music','common.exit']);menu[0].click();menu[1].click();assert.deepEqual(commands,['SkipToPrevious','SkipToNext']);console.log('tray menu tests passed');
