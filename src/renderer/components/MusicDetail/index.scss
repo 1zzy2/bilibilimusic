@@ -1,4 +1,19 @@
 .music-detail--container {
+  &.is-live {
+    background: #000;
+    > .music-title, > .music-info, > .music-detail-background { display: none; }
+    > .music-body.live-video-body { padding: 0; }
+    > .music-detail--header-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 2;
+      color: #fff;
+      background: linear-gradient(#0009, transparent);
+      .header-button { opacity: .9; }
+    }
+  }
+  & .music-body.live-video-body { padding: 24px 0; }
   position: absolute;
   top: 0;
   left: 0;

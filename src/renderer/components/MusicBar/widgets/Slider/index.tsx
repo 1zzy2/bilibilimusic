@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import "./index.scss";
 import trackPlayer from "@renderer/core/track-player";
-import { useProgress } from "@renderer/core/track-player/hooks";
+import { useCurrentMusic, useProgress } from "@renderer/core/track-player/hooks";
 
 export default function Slider() {
+    const isLive = useCurrentMusic()?.isLive;
     const [seekPercent, _setSeekPercent] = useState<number | null>(null);
     const seekPercentRef = useRef<number | null>(null);
     const { currentTime, duration } = useProgress();
@@ -39,12 +40,12 @@ export default function Slider() {
         <div
             className="music-bar--slider-container"
             onMouseDown={(e) => {
-                if (isFinite(duration) && duration) {
+                if (!isLive && isFinite(duration) && duration) {
                     isPressedRef.current = true;
                 }
             }}
             onClick={(e) => {
-                if (isFinite(duration) && duration) {
+                if (!isLive && isFinite(duration) && duration) {
                     trackPlayer.seekTo((duration * e.clientX) / window.innerWidth);
                 }
             }}
@@ -54,7 +55,7 @@ export default function Slider() {
                 className="active-bar"
                 style={{
                     transform: `translateX(${
-                        seekPercent !== null
+                        isLive ? 0 : seekPercent !== null
                             ? seekPercent * 100
                             : duration === 0
                                 ? 0

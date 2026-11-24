@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import { useCurrentMusic } from "@renderer/core/track-player/hooks";
 import { useEffect } from "react";
 import { musicDetailShownStore } from "@renderer/components/MusicDetail/store";
+import LiveVideo from "./widgets/LiveVideo";
 
 export const isMusicDetailShown = musicDetailShownStore.getValue;
 export const useMusicDetailShown = musicDetailShownStore.useValue;
@@ -23,6 +24,7 @@ function MusicDetail() {
     useEffect(() => {
         const escHandler = (evt: KeyboardEvent) => {
             if (evt.code === "Escape") {
+                if (document.fullscreenElement) return;
                 evt.preventDefault();
                 musicDetailShownStore.setValue(false);
             }
@@ -38,7 +40,7 @@ function MusicDetail() {
     return (
         <AnimatedDiv
             showIf={musicDetailShown}
-            className="music-detail--container animate__animated background-color"
+            className={`music-detail--container animate__animated background-color${musicItem?.isLive ? " is-live" : ""}`}
             mountClassName="animate__slideInUp"
             unmountClassName="animate__slideOutDown"
             onAnimationEnd={() => {
@@ -73,7 +75,8 @@ function MusicDetail() {
                 </span>
                 {musicItem?.platform ? <Tag fill>{musicItem.platform}</Tag> : null}
             </div>
-            <div className="music-body">
+            <div className={musicItem?.isLive ? "music-body live-video-body" : "music-body"}>
+                {musicItem?.isLive ? <LiveVideo /> : <>
                 <div className="music-album-options">
                     <img
                         className="music-album shadow"
@@ -83,6 +86,7 @@ function MusicDetail() {
                 </div>
 
                 <Lyric></Lyric>
+                </>}
             </div>
         </AnimatedDiv>
     );

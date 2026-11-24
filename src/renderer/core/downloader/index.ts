@@ -88,7 +88,7 @@ async function startDownload(
     const _musicItems = Array.isArray(musicItems) ? musicItems : [musicItems];
     // 过滤掉已下载的、本地音乐、任务中的音乐
     const _validMusicItems = _musicItems.filter(
-        (it) => !isDownloaded(it) && it.platform !== localPluginName,
+        (it) => !it.isLive && !isDownloaded(it) && it.platform !== localPluginName,
     );
 
     const downloadCallbacks = _validMusicItems.map((it) => {

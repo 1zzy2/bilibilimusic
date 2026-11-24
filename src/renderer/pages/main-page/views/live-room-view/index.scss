@@ -1,0 +1,15 @@
+.live-room-view {
+    .live-room-toolbar { display: flex; align-items: center; gap: 16px; margin: 12px 0; }
+    button { cursor: pointer; padding: 5px 12px; border: 0; border-radius: 4px; color: inherit; background: rgba(128, 128, 128, .1); }
+    button:disabled { cursor: default; opacity: .45; }
+    .live-room-table { width: 100%; table-layout: fixed; border-collapse: collapse; text-align: left; }
+    th { font-weight: normal; opacity: .65; border-bottom: 1px solid rgba(128, 128, 128, .2); }
+    th, td { box-sizing: border-box; text-align: left; padding: 12px 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    th:first-child { width: auto; }
+    th:nth-child(2) { width: 25%; }
+    th:nth-child(3) { width: 110px; }
+    th:last-child { width: 100px; }
+    tbody tr:nth-child(even) { background: rgba(128, 128, 128, .08); }
+    .live-room-online { color: #27864b; }
+    .live-room-message { padding: 12px 0; opacity: .8; }
+}

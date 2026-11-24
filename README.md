@@ -1,6 +1,6 @@
-# MusicFreeDesktop · 纯音乐版
+# MusicFreeDesktop · 直播版
 
-基于 MusicFreeDesktop 的个人修改版本，保留 B 站音乐搜索、歌单等音乐功能，不包含直播接入。保留本次歌单列表布局修复。
+基于 MusicFreeDesktop 的个人修改版本，支持 B 站音乐和直播搜索、直播历史、直播画面、画中画及全屏播放。直播控制栏支持自动隐藏，优先请求原画并显示实际分辨率。
 
 原项目：[maotoumao/MusicFreeDesktop](https://github.com/maotoumao/MusicFreeDesktop)。保留原许可证和作者信息。
 

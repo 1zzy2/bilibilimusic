@@ -1,4 +1,5 @@
 import { autoMatchLyric } from "./auto-match-lyric";
+import { LiveRoom, livePlaybackErrorStore, recordLiveRoom, resolveLiveSource } from "../live-rooms";
 import { CurrentTime, ICurrentLyric, PlayerEvents } from "./enum";
 import shuffle from "lodash.shuffle";
 import {
@@ -170,6 +171,7 @@ class TrackPlayer {
 
 
     private createAudioController() {
+        this.audioController?.destroy();
         const audioController = new AudioController();
         // 播放结束
         audioController.onEnded = () => {
@@ -218,6 +220,10 @@ class TrackPlayer {
         };
 
         audioController.onError = async (type, reason) => {
+            if (audioController.musicItem?.isLive) {
+                livePlaybackErrorStore.setValue("直播连接中断或播放失败，请点击播放重试");
+                this.setPlayerState(PlayerState.Paused);
+            }
             this.ee.emit(PlayerEvents.Error, audioController.musicItem, reason);
         };
 
@@ -300,6 +306,22 @@ class TrackPlayer {
         this.setRepeatMode(nextRepeatMode);
     }
 
+    private pendingLiveSource: { id: string; source: IPlugin.IMediaSourceResult } | null = null;
+    public getLiveVideoElement() {
+        return this.currentMusic?.isLive ? this.audioController.getVideoElement?.() : undefined;
+    }
+    private livePlayRequest = 0;
+
+    public async playLiveRoom(room: LiveRoom) {
+        livePlaybackErrorStore.setValue("");
+        const request = ++this.livePlayRequest;
+        const resolved = await resolveLiveSource(room.id);
+        if (request !== this.livePlayRequest) return;
+        this.pendingLiveSource = { id: resolved.room.id, source: resolved.source };
+        const item: IMusic.IMusicItem = { ...resolved.room, platform: "bilibili-live", isLive: true, liveRoom: resolved.room };
+        await this.playMusicWithReplaceQueue([item], item);
+    }
+
     public async playIndex(index: number, options: IPlayOptions = {}) {
         const { refreshSource, restartOnSameMedia = true, seekTo, quality: intendedQuality } = options;
         if (index === -1 && this.musicQueue.length === 0) {
@@ -308,9 +330,10 @@ class TrackPlayer {
         }
         // 1. normalize index
         index = (index + this.musicQueue.length) % this.musicQueue.length;
+        if (!this.musicQueue[index]?.isLive) this.livePlayRequest++;
 
         // 2. same media
-        if (this.currentIndex === index && this.isCurrentMusic(this.musicQueue[index]) && !refreshSource) {
+        if (this.currentIndex === index && this.isCurrentMusic(this.musicQueue[index]) && !refreshSource && !this.currentMusic?.isLive) {
             if (restartOnSameMedia) {
                 this.seekTo(0);
             }
@@ -393,6 +416,8 @@ class TrackPlayer {
             });
 
         } catch (e) {
+            if (nextMusicItem.isLive) livePlaybackErrorStore.setValue(e instanceof Error ? e.message : "直播播放失败，请重试");
+            this.setPlayerState(PlayerState.Paused);
             // 播放失败
             this.setCurrentQuality(AppConfig.getConfig("playMusic.defaultQuality"));
             this.audioController.reset();
@@ -467,10 +492,12 @@ class TrackPlayer {
     }
 
     public seekTo(seconds: number) {
+        if (this.currentMusic?.isLive) return;
         this.audioController.seekTo(seconds);
     }
 
     public pause() {
+        this.livePlayRequest++;
         this.audioController.pause();
         if (this.playerState !== this.audioController.playerState) {
             this.setPlayerState(this.audioController.playerState);
@@ -478,6 +505,10 @@ class TrackPlayer {
     }
 
     public resume() {
+        if (this.currentMusic?.isLive) {
+            this.playLiveRoom(this.currentMusic.liveRoom).catch(error => livePlaybackErrorStore.setValue(error.message));
+            return;
+        }
         this.audioController.play();
 
         if (this.playerState !== this.audioController.playerState) {
@@ -641,7 +672,7 @@ class TrackPlayer {
     public async fetchCurrentLyric(forceLoad = false) {
         const currentMusic = this.currentMusic;
 
-        if (!currentMusic) {
+        if (!currentMusic || currentMusic.isLive) {
             this.setCurrentLyric(null);
             return;
         }
@@ -700,6 +731,12 @@ class TrackPlayer {
 
 
     private async fetchMediaSource(musicItem: IMusic.IMusicItem, quality?: IMusic.IQualityKey) {
+        if (musicItem.isLive) {
+            const cached = this.pendingLiveSource;
+            this.pendingLiveSource = null;
+            const source = cached?.id === musicItem.id ? cached.source : (await resolveLiveSource(musicItem.id)).source;
+            return { quality: "standard" as IMusic.IQualityKey, mediaSource: source };
+        }
         const defaultQuality = AppConfig.getConfig("playMusic.defaultQuality");
         const whenQualityMissing = AppConfig.getConfig("playMusic.whenQualityMissing");
 
@@ -775,7 +812,7 @@ class TrackPlayer {
 
     private setProgress(progress: CurrentTime) {
         progressStore.setValue(progress);
-        setUserPreference("currentProgress", progress.currentTime);
+        if (!this.currentMusic?.isLive) setUserPreference("currentProgress", progress.currentTime);
         this.ee.emit(PlayerEvents.ProgressChanged, progress);
     }
 
@@ -796,6 +833,9 @@ class TrackPlayer {
     }
 
     private setPlayerState(playerState: PlayerState) {
+        if (playerState === PlayerState.Playing && this.currentMusic?.isLive && this.currentMusic.liveRoom) {
+            recordLiveRoom(this.currentMusic.liveRoom);
+        }
         playerStateStore.setValue(playerState);
         this.ee.emit(PlayerEvents.StateChanged, playerState);
     }
@@ -820,7 +860,7 @@ class TrackPlayer {
         this.resetProgress();
         this.audioController.setTrackSource(mediaSource, musicItem);
 
-        if (options.seekTo >= 0) {
+        if (!musicItem.isLive && options.seekTo >= 0) {
             this.audioController.seekTo(options.seekTo);
         }
 

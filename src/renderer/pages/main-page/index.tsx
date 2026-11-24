@@ -9,6 +9,7 @@ import LocalMusicView from "./views/local-music-view";
 import Empty from "@/renderer/components/Empty";
 import ThemeView from "./views/theme-view";
 import RecentlyPlayView from "./views/recently-play-view";
+import LiveRoomView from "./views/live-room-view";
 
 import "./index.scss";
 
@@ -17,6 +18,7 @@ export default function MainPage() {
         <>
             <SideBar></SideBar>
             <Routes>
+                <Route path="live-rooms" element={<LiveRoomView />} />
                 <Route path="search/:query" element={<SearchView></SearchView>}></Route>
                 <Route
                     path="musicsheet/:platform/:id"

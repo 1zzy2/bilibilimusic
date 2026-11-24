@@ -61,7 +61,7 @@ export default function MusicInfo() {
                                 <div className="music-artist">
                                     <div className="artist">{musicItem.artist}</div>
                                     <Progress></Progress>
-                                    <MusicFavorite musicItem={musicItem} size={18}></MusicFavorite>
+                                    {!musicItem.isLive && <MusicFavorite musicItem={musicItem} size={18}></MusicFavorite>}
                                 </div>
                             </div>
                         </>
@@ -82,7 +82,7 @@ export default function MusicInfo() {
                         }
                     ></SvgAsset>
                 </div>
-                <MusicFavorite musicItem={musicItem} size={22}></MusicFavorite>
+                {!musicItem?.isLive && <MusicFavorite musicItem={musicItem} size={22}></MusicFavorite>}
 
                 <div role="button"
                     data-disabled={!PluginManager.isSupportFeatureMethod(musicItem?.platform, "getMusicComments")}
@@ -102,10 +102,11 @@ export default function MusicInfo() {
 }
 
 function Progress() {
+    const isLive = useCurrentMusic()?.isLive;
     const { currentTime, duration } = useProgress();
     return (
         <div className="progress">
-            {isFinite(duration)
+            {isLive ? "直播中" : isFinite(duration)
                 ? `${secondsToDuration(currentTime)}/${secondsToDuration(duration)}`
                 : null}
         </div>

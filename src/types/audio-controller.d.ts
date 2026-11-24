@@ -2,6 +2,7 @@ import { PlayerState } from "@/common/constant";
 import { CurrentTime, ErrorReason } from "@renderer/core/track-player/enum";
 
 export interface IAudioController {
+    getVideoElement?(): HTMLVideoElement;
     // 是否有音源
     hasSource: boolean;
 

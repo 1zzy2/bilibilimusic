@@ -16,6 +16,7 @@ export default function () {
             title: t("side_bar.recently_play"),
             route: "recently_play",
         },
+        { iconName: "clock", title: "直播间", route: "live-rooms" },
     ] as const;
 
     return (

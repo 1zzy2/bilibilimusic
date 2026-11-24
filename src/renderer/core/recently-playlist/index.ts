@@ -32,6 +32,7 @@ export async function setupRecentlyPlaylist() {
 }
 
 export async function addToRecentlyPlaylist(musicItem: IMusic.IMusicItem) {
+    if (musicItem?.isLive) return;
     if (!musicItem || !musicItem.id || !musicItem.platform) {
         return;
     }

@@ -6,6 +6,7 @@ import { Tab } from "@headlessui/react";
 import { supportedMediaType } from "@/common/constant";
 import { useTranslation } from "react-i18next";
 import SearchResult from "./components/SearchResult";
+import LiveRoomView from "../live-room-view";
 import useSearch from "./hooks/useSearch";
 import { currentMediaTypeStore, resetStore } from "./store/search-result";
 import PluginManager, { useSortedSupportedPlugin } from "@shared/plugin-manager/renderer";
@@ -44,7 +45,7 @@ export default function SearchView() {
                 <Tab.Group
                     defaultIndex={history.state?.usr?.mediaIndex ?? 0}
                     onChange={(index) => {
-                        currentMediaTypeStore.setValue(supportedMediaType[index]);
+                        if (supportedMediaType[index]) currentMediaTypeStore.setValue(supportedMediaType[index]);
                         // 获取history
                         navigate("", {
                             replace: true,
@@ -60,6 +61,7 @@ export default function SearchView() {
                                 {t(`media.media_type_${type}`)}
                             </Tab>
                         ))}
+                        <Tab as="div" className="tab-list-item">直播间</Tab>
                     </Tab.List>
                     <Tab.Panels className={"tab-panels-container"}>
                         {supportedMediaType.map((type) => (
@@ -71,6 +73,7 @@ export default function SearchView() {
                                 ></SearchResult>
                             </Tab.Panel>
                         ))}
+                        <Tab.Panel className="tab-panel-container"><LiveRoomView query={query} /></Tab.Panel>
                     </Tab.Panels>
                 </Tab.Group>
             ) : (

@@ -1,0 +1,26 @@
+.live-video-frame {
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
+    position: relative;
+    overflow: hidden;
+    background: #000;
+    border-radius: 0;
+    color: #fff;
+    .live-video-host { position: absolute; inset: 0; }
+    .live-video-bottom { position: absolute; bottom: 0; left: 0; right: 0; height: 88px; }
+    .live-video-controls { position: absolute; bottom: 0; left: 0; right: 0; display: flex; align-items: center; gap: 10px; height: 56px; padding: 16px 20px 4px; box-sizing: content-box; background: linear-gradient(transparent, #000b); opacity: 0; transform: translateY(100%); pointer-events: none; transition: transform .25s ease 1.5s, opacity .25s ease 1.5s; }
+    .live-video-bottom:hover .live-video-controls, .live-video-bottom:has(:focus-visible) .live-video-controls { opacity: 1; transform: translateY(0); pointer-events: auto; transition-delay: 0s; }
+    .live-video-controls-spacer { flex: 1; }
+    button { border: 0; border-radius: 5px; background: transparent; color: #fff; cursor: pointer; padding: 7px; display: inline-flex; align-items: center; justify-content: center; }
+    button:hover { background: #ffffff30; }
+    button:disabled { opacity: .4; cursor: default; }
+    input { width: 90px; accent-color: #fff; }
+    .live-video-quality { font-size: 13px; opacity: .8; font-variant-numeric: tabular-nums; }
+    .live-video-status { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; background: #0008; }
+    .live-video-error { position: absolute; bottom: 62px; left: 16px; right: 16px; background: #351010ee; padding: 12px; border-radius: 5px; }
+    &:fullscreen { width: 100%; height: 100%; max-height: none; border-radius: 0; }
+    @media (prefers-reduced-motion: reduce) { .live-video-controls { transition-duration: 0s; } }
+    @media (hover: none) { .live-video-controls { opacity: 1; transform: none; pointer-events: auto; } }
+}

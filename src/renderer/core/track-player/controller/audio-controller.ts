@@ -4,7 +4,7 @@
 import { encodeUrlHeaders } from "@/common/normalize-util";
 import albumImg from "@/assets/imgs/album-cover.jpg";
 import getUrlExt from "@/renderer/utils/get-url-ext";
-import Hls, { Events as HlsEvents, HlsConfig } from "hls.js";
+import Hls, { HlsConfig } from "hls.js";
 import { isSameMedia } from "@/common/media-util";
 import { PlayerState } from "@/common/constant";
 import ServiceManager from "@shared/service-manager/renderer";
@@ -14,10 +14,11 @@ import Dexie from "dexie";
 import voidCallback from "@/common/void-callback";
 import { IAudioController } from "@/types/audio-controller";
 import Promise = Dexie.Promise;
+import { createPlaybackVideo, parkPlaybackVideo } from "./media-surface";
 
 
 class AudioController extends ControllerBase implements IAudioController {
-    private audio: HTMLAudioElement;
+    private audio: HTMLVideoElement;
     private hls: Hls;
 
     private _playerState: PlayerState = PlayerState.None;
@@ -35,12 +36,12 @@ class AudioController extends ControllerBase implements IAudioController {
     public musicItem: IMusic.IMusicItem | null = null;
 
     get hasSource() {
-        return !!this.audio.src;
+        return !!this.audio.src || !!this.hls;
     }
 
     constructor() {
         super();
-        this.audio = new Audio();
+        this.audio = createPlaybackVideo();
         this.audio.preload = "auto";
         this.audio.controls = false;
 
@@ -98,16 +99,20 @@ class AudioController extends ControllerBase implements IAudioController {
         if (!this.hls) {
             this.hls = new Hls(config);
             this.hls.attachMedia(this.audio);
-            this.hls.on(HlsEvents.ERROR, (evt, error) => {
-                this.onError(ErrorReason.EmptyResource, error);
+            this.hls.on(Hls.Events.ERROR, (evt, error) => {
+                if (error.fatal) this.onError(ErrorReason.EmptyResource, error);
             });
         }
+    }
+
+    getVideoElement() {
+        return this.audio;
     }
 
     private destroyHls() {
         if (this.hls) {
             this.hls.detachMedia();
-            this.hls.off(HlsEvents.ERROR);
+            this.hls.off(Hls.Events.ERROR);
             this.hls.destroy();
             this.hls = null;
         }
@@ -116,6 +121,7 @@ class AudioController extends ControllerBase implements IAudioController {
     destroy(): void {
         this.destroyHls();
         this.reset();
+        this.audio.remove();
     }
 
     pause(): void {
@@ -131,6 +137,7 @@ class AudioController extends ControllerBase implements IAudioController {
     }
 
     reset(): void {
+        this.destroyHls();
         this.playerState = PlayerState.None;
         this.audio.src = "";
         this.audio.removeAttribute("src");
@@ -162,6 +169,11 @@ class AudioController extends ControllerBase implements IAudioController {
     }
 
     prepareTrack(musicItem: IMusic.IMusicItem) {
+        if (!musicItem.isLive) {
+            if (document.pictureInPictureElement === this.audio) document.exitPictureInPicture().catch(voidCallback);
+            parkPlaybackVideo(this.audio);
+        }
+        this.destroyHls();
         this.musicItem = { ...musicItem };
 
         // 1. update metadata
@@ -184,6 +196,7 @@ class AudioController extends ControllerBase implements IAudioController {
     }
 
     setTrackSource(trackSource: IMusic.IMusicSource, musicItem: IMusic.IMusicItem): void {
+        this.destroyHls();
         this.musicItem = { ...musicItem };
 
         // 1. update metadata
